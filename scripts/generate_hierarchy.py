@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 """
-Command-line script to extract WordNet hierarchies and save them as CSV files.
+Command-line script to extract WordNet hierarchies and save them as JSON files.
 
 Usage:
-    python generate_hierarchy.py dog --output data/synset_hierarchies/dog.csv
+    python generate_hierarchy.py dog --output data/synset_hierarchies/dog.json
 """
 import os
 import sys
 import argparse
 import matplotlib.pyplot as plt
+import pandas as pd
+import json
+from pathlib import Path
 
 # Add the parent directory to the path to import modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -19,7 +22,7 @@ from src.visualization_tools import visualize_hierarchy
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Extract a hierarchy from WordNet and save it as a CSV file"
+        description="Extract a hierarchy from WordNet and save it as a JSON file"
     )
     
     # Required arguments
@@ -31,7 +34,7 @@ def parse_arguments():
     parser.add_argument(
         "--output", "-o",
         required=True,
-        help="Output file path for the CSV (required)"
+        help="Output file path for the JSON file"
     )
     
     # Optional arguments
@@ -48,6 +51,7 @@ def parse_arguments():
         default=0,
         help="Minimum frequency threshold for including a synset (default: 0)"
     )
+    
     parser.add_argument(
         "--visualize", "-v",
         action="store_true",
@@ -86,8 +90,12 @@ def main():
     parser = parse_arguments()
     args = parser.parse_args()
     
-    output_file = args.output
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    # Ensure output ends with .json
+    output_path = args.output
+    if not output_path.endswith('.json'):
+        output_path = f"{output_path}.json"
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     if args.visualize and not args.vis_dir:
         parser.error("--vis-dir is required if --visualize is used")
@@ -96,24 +104,48 @@ def main():
     print(f"Extracting hierarchy for '{args.concept}'...")
     print(f"  Max depth: {args.max_depth}")
     print(f"  Frequency threshold: {args.freq_threshold}")
-    print(f"  Output file: {output_file}")
+    print(f"  Output file: {output_path}")
     
     try:
         hier_df, graph = extract_hierarchy(
             args.concept,
             max_depth=args.max_depth,
             frequency_threshold=args.freq_threshold,
-            output_file=output_file
+            output_file=None  # Don't save CSV
         )
         
         print(f"Successfully created hierarchy with {len(graph.nodes)} nodes")
-        print(f"Saved to {output_file}")
+        
+        # Create hierarchy data for JSON
+        simplified_data = []
+        
+        # Find depth columns to extract paths
+        depth_cols = [col for col in hier_df.columns if col.startswith('cat_depth_')]
+        depth_cols.sort()
+        
+        # Process each row to create path information
+        for _, row in hier_df.iterrows():
+            # Get the formatted path (remove None values)
+            path_names = [row[col] for col in depth_cols if pd.notna(row[col])]
+            
+            # Create entry with only essential data
+            simplified_data.append({
+                'synset_id': row['synset_id'],
+                'name': row['class'],
+                'definition': row['definition'],
+                'path_names': path_names
+            })
+        
+        # Save data to JSON
+        with open(output_path, 'w') as f:
+            json.dump(simplified_data, f, indent=2)
+        print(f"Saved hierarchy to {output_path}")
         
         # Generate visualizations if requested
         if args.visualize:
             if not args.vis_dir:
                 # Default to same directory as output file if not specified
-                vis_dir = os.path.dirname(output_file)
+                vis_dir = os.path.dirname(output_path)
                 print("No visualization directory specified, using output directory")
             else:
                 vis_dir = args.vis_dir
@@ -122,7 +154,7 @@ def main():
             print(f"Generating visualizations in {vis_dir}...")
             
             for layout in args.layouts:
-                concept_name = os.path.splitext(os.path.basename(output_file))[0]
+                concept_name = os.path.basename(output_path).replace('.json', '')
                 vis_file = os.path.join(vis_dir, f"{concept_name}_{layout}.png")
                 print(f"  Creating {layout} layout...")
                 

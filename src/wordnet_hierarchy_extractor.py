@@ -51,7 +51,7 @@ def extract_hierarchy(word, max_depth=2, frequency_threshold=0, output_file=None
         output_file: Path to save CSV (default: None)
         
     Returns:
-        DataFrame containing the hierarchy
+        DataFrame containing the hierarchy and the NetworkX graph
     """
     root_synset = find_root_synset(word)
     hypotree = create_hyponym_tree(root_synset, max_depth, frequency_threshold)
@@ -67,15 +67,21 @@ def extract_hierarchy(word, max_depth=2, frequency_threshold=0, output_file=None
                            for path in all_paths.values()], 
                            columns=columns)
     
-    hier_df.insert(0, 'class', all_paths.keys())
-    hier_df.insert(len(columns) + 1, 'frequency', 
+    # Add synset ID and frequency
+    hier_df.insert(0, 'synset_id', all_paths.keys())
+    hier_df.insert(1, 'class', all_paths.keys())
+    hier_df.insert(len(columns) + 2, 'frequency', 
                   [wn.synset(key).lemmas()[0].count() for key in all_paths.keys()])
+    
+    # Add definition column for enriching prompts
+    hier_df.insert(len(columns) + 3, 'definition',
+                  [wn.synset(key).definition() for key in all_paths.keys()])
     
     # Format node names
     format_node_name = lambda x: x.split('.')[0].replace("_", " ").title() if x is not None else None
     
     # Apply the formatting function to each column individually
-    for col in hier_df.iloc[:, :len(columns) + 1].columns:
+    for col in hier_df.iloc[:, 1:len(columns) + 2].columns:
         hier_df[col] = hier_df[col].map(format_node_name)
     
     # Save to file if requested
