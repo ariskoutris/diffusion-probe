@@ -59,15 +59,35 @@ To extract and visualize concept hierarchies from WordNet:
 from src.wordnet_hierarchy_extractor import extract_hierarchy
 from src.visualization_tools import visualize_hierarchy
 import matplotlib.pyplot as plt
+import json
 
 # Extract a hierarchy for a concept
 concept = "dog"
 hier_df, graph = extract_hierarchy(
     concept,
     max_depth=2,
-    frequency_threshold=1,
-    output_file=f"data/synset_hierarchies/{concept}.csv"
+    frequency_threshold=1
 )
+
+# Save the hierarchy data as JSON
+output_file = f"data/synset_hierarchies/{concept}.json"
+# Find depth columns
+depth_cols = [col for col in hier_df.columns if col.startswith('cat_depth_')]
+depth_cols.sort()
+
+# Create simplified hierarchy data
+simplified_data = []
+for _, row in hier_df.iterrows():
+    path_names = [row[col] for col in depth_cols if pd.notna(row[col])]
+    simplified_data.append({
+        'synset_id': row['synset_id'],
+        'name': row['class'],
+        'definition': row['definition'],
+        'path_names': path_names
+    })
+
+with open(output_file, 'w') as f:
+    json.dump(simplified_data, f, indent=2)
 
 # Visualize the hierarchy using different layouts
 visualize_hierarchy(graph, layout="dot", figsize=(10, 15))
@@ -86,15 +106,15 @@ You can also use the provided command-line script to generate hierarchies:
 Basic usage:
 
 ```bash
-python scripts/generate_hierarchy.py dog --output data/synset_hierarchies/dog.csv
+python scripts/generate_hierarchy.py dog --output data/synset_hierarchies/dog.json
 ```
 
-This will create a WordNet hierarchy for the concept "dog" with a depth of 2 and save it to the specified location.
+This will create a WordNet hierarchy for the concept "dog" with a depth of 2 and save it as a JSON file.
 
 Advanced usage:
 
 ```bash
-python scripts/generate_hierarchy.py vehicle --max-depth 3 --freq-threshold 5 --output data/custom/vehicle_deep.csv --visualize --vis-dir data/visualizations --layouts dot twopi
+python scripts/generate_hierarchy.py vehicle --max-depth 3 --freq-threshold 5 --output data/custom/vehicle.json --visualize --vis-dir data/visualizations --layouts dot twopi
 ```
 
 For all available options:
@@ -128,12 +148,34 @@ For each synset in our hierarchy:
 3. We employ Composable-Diffusion to combine the full prompt with a version using only the synset name
 4. We generate multiple images per synset using consistent parameters
 
+To generate images using our scripts:
+
+```bash
+# First, extract a WordNet hierarchy and save it as a JSON file
+python scripts/generate_hierarchy.py dog --output ./data/dog.json
+
+# Then, generate prompts from the hierarchy data
+python scripts/generate_sd_prompts.py ./data/dog.json --output ./data
+
+# You can also generate prompts only for leaf nodes (specific categories)
+python scripts/generate_sd_prompts.py ./data/dog.json --output ./data --leaves-only
+
+# Finally, generate images using the Stable Diffusion API
+python scripts/generate_sd_images.py ./data/prompts/dog_prompts.json --output ./data/images
+```
+
+For custom prompt formats (e.g., for dog breeds):
+
+```bash
+python scripts/generate_sd_prompts.py ./data/dog.json --format dog --output ./data
+```
+
 After grid-searching various parameters, we settled on:
 - Sampler: LMS
 - Sampling Steps: 35
 - CFG Scale: 5.5
 
-**Files used**: `prompt_generator.py`, `stable_diffusion_generator.py`, `parameter_tuning.py`
+**Files used**: `generate_hierarchy.py`, `generate_sd_prompts.py`, `generate_sd_images.py`
 
 ### Feature Extraction and Analysis
 
