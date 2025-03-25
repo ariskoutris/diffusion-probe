@@ -37,6 +37,7 @@ def send_generation_request(prompt, model="core", aspect_ratio="1:1", negative_p
     response = requests.post(
         host,
         headers=headers,
+        files={"none": ''},
         data=params
     )
     if not response.ok:

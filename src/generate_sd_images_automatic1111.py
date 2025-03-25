@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Generate images using Stable Diffusion API from WordNet-based prompts.
+Generate images using Automatic1111's Stable Diffusion API from WordNet-based prompts.
+Set up here: https://github.com/AUTOMATIC1111/stable-diffusion-webui
 """
 import os
 import json
