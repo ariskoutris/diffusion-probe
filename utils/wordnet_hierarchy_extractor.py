@@ -5,7 +5,7 @@ import os
 import networkx as nx
 import pandas as pd
 from nltk.corpus import wordnet as wn
-from src.synset_processor import get_synset_attributes, find_root_synset, calculate_similarity
+from utils.synset_processor import get_synset_attributes, find_root_synset, calculate_similarity
 
 
 def create_hyponym_tree(root_synset, max_depth=1, frequency_threshold=0):

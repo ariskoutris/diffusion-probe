@@ -16,8 +16,8 @@ from pathlib import Path
 # Add the parent directory to the path to import modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.wordnet_hierarchy_extractor import extract_hierarchy
-from src.visualization_tools import visualize_hierarchy
+from utils.wordnet_hierarchy_extractor import extract_hierarchy
+from utils.visualization_tools import visualize_hierarchy
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -53,14 +53,8 @@ def parse_arguments():
     )
     
     parser.add_argument(
-        "--visualize", "-v",
-        action="store_true",
-        help="Generate visualizations of the hierarchy"
-    )
-    
-    parser.add_argument(
         "--vis-dir",
-        help="Directory to save visualizations (required if --visualize is used)"
+        help="Directory to save visualizations (if provided, visualizations will be generated)"
     )
     
     parser.add_argument(
@@ -96,9 +90,6 @@ def main():
         output_path = f"{output_path}.json"
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-    if args.visualize and not args.vis_dir:
-        parser.error("--vis-dir is required if --visualize is used")
     
     # Extract the hierarchy
     print(f"Extracting hierarchy for '{args.concept}'...")
@@ -141,15 +132,9 @@ def main():
             json.dump(simplified_data, f, indent=2)
         print(f"Saved hierarchy to {output_path}")
         
-        # Generate visualizations if requested
-        if args.visualize:
-            if not args.vis_dir:
-                # Default to same directory as output file if not specified
-                vis_dir = os.path.dirname(output_path)
-                print("No visualization directory specified, using output directory")
-            else:
-                vis_dir = args.vis_dir
-            
+        # Generate visualizations if vis_dir is provided
+        if args.vis_dir:
+            vis_dir = args.vis_dir
             os.makedirs(vis_dir, exist_ok=True)
             print(f"Generating visualizations in {vis_dir}...")
             
