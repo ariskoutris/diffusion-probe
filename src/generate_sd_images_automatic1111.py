@@ -9,7 +9,6 @@ import requests
 import io
 import base64
 import time
-from pathlib import Path
 from PIL import Image, PngImagePlugin
 
 def load_prompts(prompt_file):
@@ -17,7 +16,7 @@ def load_prompts(prompt_file):
     with open(prompt_file, 'r') as f:
         return json.load(f)
 
-def generate_images(prompts, output_dir, api_url="http://localhost:7860", 
+def generate_images(prompts, output_dir, api_url, 
                    batch_size=4, num_images=8, steps=35, cfg_scale=5.5, 
                    sampler="LMS", width=512, height=512, seed=-1, delay=1):
     """Generate images for each prompt using Stable Diffusion API."""
