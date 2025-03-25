@@ -34,13 +34,13 @@ The core hypothesis is that if a generative model has properly encoded conceptua
 To extract and visualize concept hierarchies from WordNet, use the command-line script:
 
 ```bash
-python scripts/generate_hierarchy.py dog --output data/synset_hierarchies/dog.json
+python src/generate_hierarchy.py dog --output-dir hierarchies/
 ```
 
 For visualizations:
 
 ```bash
-python scripts/generate_hierarchy.py vehicle --max-depth 3 --freq-threshold 5 --output data/custom/vehicle.json --vis-dir data/visualizations --layouts dot twopi
+python src/generate_hierarchy.py dog --output-dir hierarchies/ --visualize --layout twopi
 ```
 
 ### Image Generation with Stable Diffusion
@@ -48,11 +48,8 @@ python scripts/generate_hierarchy.py vehicle --max-depth 3 --freq-threshold 5 --
 Run these scripts in sequence:
 
 ```bash
-# Generate prompts from the hierarchy data
-python scripts/generate_sd_prompts.py ./data/dog.json --output ./data
-
-# Generate images using the Stable Diffusion API
-python scripts/generate_sd_images.py ./data/prompts/dog_prompts.json --output ./data/images
+python src/generate_sd_prompts.py hierarchies/dog.json --output-dir prompts/
+python src/generate_sd_images.py prompts/dog_prompts.json --output-dir images/
 ```
 
 ## Methodology

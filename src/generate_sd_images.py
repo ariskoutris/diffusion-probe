@@ -106,7 +106,7 @@ def generate_images(prompts, output_dir, api_url="http://localhost:7860",
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate images using Stable Diffusion API")
     parser.add_argument("prompt_file", help="JSON file containing prompts")
-    parser.add_argument("--output", default="./outputs", help="Output directory for images")
+    parser.add_argument("--output-dir", required=True, help="Output directory for images")
     parser.add_argument("--api-url", default="http://localhost:7860", help="Stable Diffusion API URL")
     parser.add_argument("--batch-size", type=int, default=4, help="Batch size for generation")
     parser.add_argument("--num-images", type=int, default=8, help="Number of images to generate per concept")
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     # Generate images
     generate_images(
         prompts,
-        args.output,
+        args.output_dir,
         api_url=args.api_url,
         batch_size=args.batch_size,
         num_images=args.num_images,

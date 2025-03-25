@@ -27,7 +27,7 @@ def load_hierarchy_data(input_file):
     with open(input_file, 'r') as f:
         return json.load(f)
 
-def generate_prompts(hierarchy_data, output_dir=None, custom_format=None, leaves_only=False):
+def generate_prompts(hierarchy_data, output_dir=None, custom_format=None, leaves_only=False, input_filename=None):
     """Generate prompts based on hierarchy data."""
     if not hierarchy_data:
         raise ValueError("No hierarchy data provided")
@@ -38,8 +38,7 @@ def generate_prompts(hierarchy_data, output_dir=None, custom_format=None, leaves
     # Create output directories
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-        prompts_dir = os.path.join(output_dir, "prompts")
-        os.makedirs(prompts_dir, exist_ok=True)
+        # We no longer create a prompts subdirectory
     
     # Filter to leaves only if requested
     if leaves_only:
@@ -104,9 +103,10 @@ def generate_prompts(hierarchy_data, output_dir=None, custom_format=None, leaves
         prompt_data.append(prompt_entry)
     
     # Save prompts to file
-    if output_dir:
-        concept_name = os.path.basename(output_dir.rstrip("/"))
-        output_file = os.path.join(prompts_dir, f"{concept_name}_prompts.json")
+    if output_dir and input_filename:
+        # Construct filename with leaves_only indicator if applicable
+        filename_suffix = "_leaves_only_prompts.json" if leaves_only else "_prompts.json"
+        output_file = os.path.join(output_dir, f"{input_filename}{filename_suffix}")
         with open(output_file, 'w') as f:
             json.dump(prompt_data, f, indent=2)
         print(f"Prompts saved to {output_file}")
@@ -116,7 +116,7 @@ def generate_prompts(hierarchy_data, output_dir=None, custom_format=None, leaves
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate prompts for Stable Diffusion based on WordNet hierarchy")
     parser.add_argument("input_file", help="Input JSON file containing hierarchy data")
-    parser.add_argument("--output", help="Output directory for generated files")
+    parser.add_argument("--output-dir", required=True, help="Output directory for generated files")
     parser.add_argument("--format", choices=["default", "dog", "building"], default="default",
                        help="Custom prompt format to use")
     parser.add_argument("--leaves-only", action="store_true", 
@@ -133,15 +133,16 @@ if __name__ == "__main__":
     # Load hierarchy data
     hierarchy_data = load_hierarchy_data(input_file)
     
-    # Generate prompts
-    concept_name = os.path.splitext(os.path.basename(input_file))[0]
-    output_dir = args.output if args.output else f"./data/{concept_name}"
+    # Get the input filename without directory or extension
+    input_filename = os.path.splitext(os.path.basename(input_file))[0]
+    output_dir = args.output_dir
     
     prompts, root_category = generate_prompts(
         hierarchy_data,
         output_dir=output_dir,
         custom_format=args.format if args.format != "default" else None,
-        leaves_only=args.leaves_only
+        leaves_only=args.leaves_only,
+        input_filename=input_filename
     )
     
     print(f"Generated {len(prompts)} prompts for concept '{root_category}'")

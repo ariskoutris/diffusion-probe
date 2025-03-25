@@ -3,7 +3,7 @@
 Command-line script to extract WordNet hierarchies and save them as JSON files.
 
 Usage:
-    python generate_hierarchy.py dog --output data/synset_hierarchies/dog.json
+    python generate_hierarchy.py dog --output-dir /hierarchies/ --generate-vis
 """
 import os
 import sys
@@ -32,9 +32,9 @@ def parse_arguments():
     )
     
     parser.add_argument(
-        "--output", "-o",
+        "--output-dir", "-o",
         required=True,
-        help="Output file path for the JSON file"
+        help="Output directory where the JSON file will be saved"
     )
     
     # Optional arguments
@@ -53,16 +53,16 @@ def parse_arguments():
     )
     
     parser.add_argument(
-        "--vis-dir",
-        help="Directory to save visualizations (if provided, visualizations will be generated)"
+        "--visualize", "-v",
+        action="store_true",
+        help="Generate visualization images in the output directory"
     )
     
     parser.add_argument(
-        "--layouts",
-        nargs="+",
-        default=["dot", "twopi"],
+        "--layout",
+        default="twopi",
         choices=["dot", "twopi", "neato", "circo", "fdp", "spring"],
-        help="Layout algorithms to use for visualizations (default: dot twopi)"
+        help="Layout algorithm to use for visualization (default: twopi)"
     )
     
     parser.add_argument(
@@ -84,12 +84,12 @@ def main():
     parser = parse_arguments()
     args = parser.parse_args()
     
-    # Ensure output ends with .json
-    output_path = args.output
-    if not output_path.endswith('.json'):
-        output_path = f"{output_path}.json"
+    # Create filename from concept name
+    filename = f"{args.concept}.json"
+    output_path = os.path.join(args.output_dir, filename)
     
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # Ensure output directory exists
+    os.makedirs(args.output_dir, exist_ok=True)
     
     # Extract the hierarchy
     print(f"Extracting hierarchy for '{args.concept}'...")
@@ -132,30 +132,28 @@ def main():
             json.dump(simplified_data, f, indent=2)
         print(f"Saved hierarchy to {output_path}")
         
-        # Generate visualizations if vis_dir is provided
-        if args.vis_dir:
-            vis_dir = args.vis_dir
-            os.makedirs(vis_dir, exist_ok=True)
+        # Generate visualizations if requested
+        if args.visualize:
+            vis_dir = args.output_dir
             print(f"Generating visualizations in {vis_dir}...")
             
-            for layout in args.layouts:
-                concept_name = os.path.basename(output_path).replace('.json', '')
-                vis_file = os.path.join(vis_dir, f"{concept_name}_{layout}.png")
-                print(f"  Creating {layout} layout...")
-                
-                try:
-                    fig, ax = visualize_hierarchy(
-                        graph,
-                        layout=layout,
-                        figsize=(12, 10),
-                        font_size=7,
-                        show_bbox=True
-                    )
-                    plt.savefig(vis_file)
-                    plt.close(fig)
-                    print(f"  Saved to {vis_file}")
-                except Exception as e:
-                    print(f"  Error creating {layout} layout: {str(e)}")
+            concept_name = os.path.basename(output_path).replace('.json', '')
+            vis_file = os.path.join(vis_dir, f"{concept_name}_{args.layout}.png")
+            print(f"  Creating {args.layout} layout...")
+
+            try:
+                fig, ax = visualize_hierarchy(
+                    graph,
+                    layout=args.layout,
+                    figsize=(12, 10),
+                    font_size=7,
+                    show_bbox=True
+                )
+                plt.savefig(vis_file)
+                plt.close(fig)
+                print(f"  Saved to {vis_file}")
+            except Exception as e:
+                print(f"  Error creating {args.layout} layout: {str(e)}")
     
     except Exception as e:
         print(f"Error: {str(e)}")
