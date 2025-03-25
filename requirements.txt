@@ -1,0 +1,12 @@
+# Core dependencies
+nltk>=3.6.0
+pandas>=1.3.0
+networkx>=2.6.0
+matplotlib>=3.4.0
+
+# For graph visualization
+pygraphviz>=1.7
+pydot>=1.4.2
+
+# For importing NLTK WordNet data (run after installation)
+# python -c "import nltk; nltk.download('wordnet'); nltk.download('omw-1.4')"
