@@ -12,17 +12,8 @@ __pycache__/
 tensorboard_logs/
 tensorboard_states/
 
-# Data files
-data/*.png
-data/dog_demo/
-data/images/
-data/sd_scripts/
-data/synset_hierarchies/
-data/vectors/
-
-# Data and Figures
-data/
-figures/
-
 # Mac OS specific files
 .DS_Store
+
+# Environment files
+.env
