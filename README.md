@@ -1,4 +1,4 @@
-# DiffusionTaxonomy: Probing WordNet Knowledge in Generative Models
+# Probing WordNet Knowledge in Generative Models
 
 This project investigates whether text-to-image generative models encode hierarchical knowledge consistent with linguistic ontologies. Specifically, we evaluate if Stable Diffusion's generative capabilities respect the concept hierarchies defined in WordNet's taxonomy.
 
@@ -37,7 +37,7 @@ To extract and visualize concept hierarchies from WordNet, use the command-line 
 python src/generate_hierarchy.py dog --output-dir hierarchies/
 ```
 
-For visualizations:
+For visualizations of concept hierarchies:
 
 ```bash
 python src/generate_hierarchy.py dog --output-dir hierarchies/ --visualize --layout twopi
@@ -68,18 +68,5 @@ We generate images using prompts derived from the WordNet hierarchies. The proce
 We extract features from generated images and perform two experiments:
 1. Classification to hypernyms
 2. Clustering of hyponyms
-
-Run the analysis scripts:
-```bash
-python scripts/extract_features.py ./data/images --output ./data/features
-python scripts/train_classifier.py ./data/features --output ./data/classifiers
-python scripts/evaluate_clustering.py ./data/features --output ./data/clustering
-```
-
-### Visualization and Interpretation
-Generate visualizations of the results:
-```bash
-python scripts/visualize_results.py ./data/features --output ./data/visualizations
-```
 
 Our experiments primarily focused on the "dog" hierarchy as a case study, but the methodology can be applied to any concept in WordNet.
