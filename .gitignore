@@ -17,3 +17,6 @@ tensorboard_states/
 
 # Environment files
 .env
+
+# Data files
+data/
