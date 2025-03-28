@@ -1,5 +1,11 @@
 # Probing WordNet Knowledge in Generative Models
 
+<div align="center">
+<br>
+   <img src="https://imgur.com/af702qL.png" alt="Grid of dogs" width="60%" />
+<br></br>
+</div>
+
 This project investigates whether text-to-image generative models encode hierarchical knowledge consistent with linguistic ontologies. Specifically, we evaluate if Stable Diffusion's generative capabilities respect the concept hierarchies defined in WordNet's taxonomy.
 
 The core hypothesis is that if a generative model has properly encoded conceptual knowledge, the distribution of images generated from a hypernym concept (e.g., "dog") should encompass the distributions of its hyponyms (e.g., "corgi", "poodle", "dalmatian"). This provides a systematic way to:
@@ -42,6 +48,11 @@ For visualizations of concept hierarchies:
 ```bash
 python src/generate_hierarchy.py dog --output-dir hierarchies/ --visualize --layout twopi
 ```
+
+<div align="center">
+
+   <img src="https://imgur.com/IyQyHNK.png" alt="Grid of dogs" width="60%" />
+</div>
 
 ### Image Generation with Stable Diffusion
 
