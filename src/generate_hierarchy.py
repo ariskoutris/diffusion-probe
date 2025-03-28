@@ -102,7 +102,7 @@ def main():
             args.concept,
             max_depth=args.max_depth,
             frequency_threshold=args.freq_threshold,
-            output_file=None  # Don't save CSV
+            output_file=None 
         )
         
         print(f"Successfully created hierarchy with {len(graph.nodes)} nodes")
