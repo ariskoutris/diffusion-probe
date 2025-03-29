@@ -6,17 +6,17 @@
 <br></br>
 </div>
 
-This project investigates whether text-to-image generative models encode hierarchical knowledge consistent with linguistic ontologies. Specifically, we evaluate if Stable Diffusion's generative capabilities respect the concept hierarchies defined in WordNet's taxonomy.
+This project investigates whether text-to-image generative models encode hierarchical knowledge consistent with linguistic ontologies. Specifically, it evaluates whether Stable Diffusion's generative capabilities respect the concept hierarchies defined in WordNet's taxonomy.
 
 The core hypothesis is that if a generative model has properly encoded conceptual knowledge, the distribution of images generated from a hypernym concept (e.g., "dog") should encompass the distributions of its hyponyms (e.g., "corgi", "poodle", "dalmatian"). This provides a systematic way to:
 
-1. Test the comprehensiveness of a model's knowledge
+1. Test the comprehensiveness of the model's knowledge
 2. Identify potential biases in image generation
 3. Evaluate how well semantic relationships in language transfer to visual representations
 
 ## Installation
 
-1. Clone this repository:
+1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/wordnet-diffusion.git
    cd wordnet-diffusion
@@ -50,7 +50,6 @@ python src/generate_hierarchy.py dog --output-dir hierarchies/ --visualize --lay
 ```
 
 <div align="center">
-
    <img src="https://imgur.com/IyQyHNK.png" alt="Grid of dogs" width="60%" />
 </div>
 
@@ -65,19 +64,19 @@ python src/generate_sd_images.py prompts/dog_prompts.json --output-dir images/
 
 ## Methodology
 
-Our approach consists of several key components:
+The approach consists of several key components:
 
 ### WordNet Hierarchy Extraction
-We extract hierarchies from WordNet using the `generate_hierarchy.py` script, which allows configuring depth and frequency thresholds.
+Extract hierarchies from WordNet using the `generate_hierarchy.py` script, which allows configuring depth and frequency thresholds.
 
 ### Image Generation with Stable Diffusion
-We generate images using prompts derived from the WordNet hierarchies. The process involves:
+Generate images using prompts derived from the WordNet hierarchies. The process involves:
 - Creating prompts with the `generate_sd_prompts.py` script
 - Generating images with the `generate_sd_images.py` script
 
 ### Feature Extraction and Analysis
-We extract features from generated images and perform two experiments:
+Extract features from generated images which are used in two experiments:
 1. Classification to hypernyms
 2. Clustering of hyponyms
 
-Our experiments primarily focused on the "dog" hierarchy as a case study, but the methodology can be applied to any concept in WordNet.
+The experiments primarily focus on the "dog" hierarchy as a case study, but the methodology can be applied to any concept in WordNet.
