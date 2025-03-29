@@ -8,66 +8,50 @@ import argparse
 import json
 
 def load_hierarchy_data(input_file):
-    """Load hierarchy data from JSON file."""
     with open(input_file, 'r') as f:
         return json.load(f)
 
 def generate_prompts(hierarchy_data, output_dir=None, leaves_only=False, input_filename=None):
-    """Generate prompts based on hierarchy data."""
     if not hierarchy_data:
         raise ValueError("No hierarchy data provided")
         
-    # Get root category from first entry's last path element
     root_category = hierarchy_data[0]['path_names'][-1]  
     
-    # Create output directories
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-        # We no longer create a prompts subdirectory
     
-    # Filter to leaves only if requested
     if leaves_only:
-        # First, build a dictionary mapping synset_id to its children
         children = {}
         for item in hierarchy_data:
             synset_id = item['synset_id']
             children[synset_id] = []
         
-        # Populate children lists
         for item in hierarchy_data:
-            # Skip the root item
             if len(item['path_names']) <= 1:
                 continue
                 
-            # Get the parent synset ID
-            parent_path_name = item['path_names'][-2]  # Second last element is the parent
+            parent_path_name = item['path_names'][-2]
             parent_item = next((i for i in hierarchy_data if i['name'] == parent_path_name), None)
             
             if parent_item:
                 parent_id = parent_item['synset_id']
                 children[parent_id].append(item['synset_id'])
         
-        # Identify leaf nodes (nodes with no children)
         leaf_synsets = [synset_id for synset_id, child_list in children.items() if not child_list]
         
-        # Filter hierarchy data to keep only leaf nodes
         hierarchy_data = [item for item in hierarchy_data if item['synset_id'] in leaf_synsets]
         
         print(f"Filtered to {len(hierarchy_data)} leaf nodes")
     
-    # Generate prompts for each entry
     prompt_data = []
     
     for item in hierarchy_data:
-        # Extract data
         name = item['name']
         definition = item.get('definition', "")
         
-        # Use plain path names for the prompt
         path_names = item['path_names']
         prompt = f"a photograph of a {path_names[-1]}. {path_names[-1]} is a {', '.join(path_names[:-1])}. {path_names[-1]} is a {definition}."
         
-        # Create prompt data entry
         prompt_entry = {
             'synset_id': item['synset_id'],
             'name': name,
@@ -76,9 +60,7 @@ def generate_prompts(hierarchy_data, output_dir=None, leaves_only=False, input_f
         }
         prompt_data.append(prompt_entry)
     
-    # Save prompts to file
     if output_dir and input_filename:
-        # Construct filename with leaves_only indicator if applicable
         filename_suffix = "_leaves_only_prompts.json" if leaves_only else "_prompts.json"
         output_file = os.path.join(output_dir, f"{input_filename}{filename_suffix}")
         with open(output_file, 'w') as f:
@@ -96,16 +78,13 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # Ensure input file is JSON
     input_file = args.input_file
     if not input_file.endswith('.json'):
         input_file = f"{input_file}.json"
         print(f"Assuming JSON input file: {input_file}")
     
-    # Load hierarchy data
     hierarchy_data = load_hierarchy_data(input_file)
     
-    # Get the input filename without directory or extension
     input_filename = os.path.splitext(os.path.basename(input_file))[0]
     output_dir = args.output_dir
     

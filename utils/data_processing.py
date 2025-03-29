@@ -3,9 +3,7 @@ import numpy as np
 import pandas as pd
 from keras.utils import load_img, img_to_array
 import concurrent.futures
-from tqdm import tqdm  # Optional: for progress bar
-
-# ...existing imports...
+from tqdm import tqdm
 
 IMG_EXTENSIONS = [
     ".jpg", ".JPG", ".jpeg", ".JPEG", ".png", ".PNG",
@@ -25,7 +23,6 @@ def make_dataset(dir_path):
     return images
 
 def normalize(data):
-    """Normalize data to range [0,1]"""
     return (data - np.min(data)) / (np.max(data) - np.min(data))
 
 def load_images(root_category, img_dir, target_size=(224, 224), max_workers=None, load_img_data=True, show_progress=False):
@@ -53,7 +50,6 @@ def load_images(root_category, img_dir, target_size=(224, 224), max_workers=None
     
     img_arrs = []
     if load_img_data:
-        # Function to load a single image
         def load_single_image(path):
             try:
                 img = load_img(path, target_size=target_size)
@@ -64,7 +60,6 @@ def load_images(root_category, img_dir, target_size=(224, 224), max_workers=None
         
         paths_to_process = tqdm(img_paths, desc="Loading images") if show_progress else img_paths
         
-        # Load images in parallel using threads
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             img_arrs = list(executor.map(load_single_image, paths_to_process))
     
@@ -80,16 +75,10 @@ def load_images(root_category, img_dir, target_size=(224, 224), max_workers=None
     }
 
 def load_hierarchy(root_category, hierarchy_dir):
-    """
-    Load hierarchy CSV for the given root category.
-    """
     file_path = os.path.join(hierarchy_dir, f"{root_category.casefold()}.csv")
     return pd.read_csv(file_path)
 
 def create_metadata_df(image_data, hierarchy_df):
-    """
-    Create a metadata DataFrame from image data and hierarchy information.
-    """
     metadata_df = pd.DataFrame(
         list(zip(
             image_data["ids"], 
@@ -107,5 +96,4 @@ def create_metadata_df(image_data, hierarchy_df):
         hierarchy_df, left_on='class_name', right_on='class', suffixes=['','_y']
     )
     
-    # Keep only relevant columns and fill missing values with 'None'
     return metadata_df[['class', 'cat_depth_0', 'cat_depth_1', 'cat_depth_2', 'frequency']].fillna('None')

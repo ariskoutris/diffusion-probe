@@ -32,7 +32,6 @@ def send_generation_request(prompt, model="core", aspect_ratio="1:1", negative_p
         "output_format": output_format
     }
     
-    # Send request
     print(f"Sending request to Stability AI {model.upper()} API...")
     response = requests.post(
         host,
@@ -50,10 +49,8 @@ def generate_images(prompts, output_dir, model="core", aspect_ratio="1:1",
                    negative_prompt="", delay=3):
     """Generate images for each prompt using Stability AI API."""
     
-    # Create the output directory
     os.makedirs(output_dir, exist_ok=True)
     
-    # Track progress
     total = len(prompts)
     success = 0
     failed = 0
@@ -64,22 +61,18 @@ def generate_images(prompts, output_dir, model="core", aspect_ratio="1:1",
         prompt = item['prompt']
         name = item['name']
         
-        # Create directory for this concept
         concept_dir = os.path.join(output_dir, item['path'] if 'path' in item and item['path'] else name)
         os.makedirs(concept_dir, exist_ok=True)
         
         print(f"[{i+1}/{total}] Generating {num_images} images for '{name}'...")
         
-        # Generate requested number of images
         image_count = 0
         for img_idx in range(num_images):
             try:
-                # Use a different seed for each image if seed is 0
                 current_seed = seed if seed != 0 else int(time.time() * 1000) % 4294967295
                 if img_idx > 0:
                     current_seed += img_idx
                 
-                # Make API request
                 response = send_generation_request(
                     prompt=prompt,
                     model=model,
@@ -89,17 +82,14 @@ def generate_images(prompts, output_dir, model="core", aspect_ratio="1:1",
                     output_format=output_format
                 )
                 
-                # Get response content
                 output_image = response.content
                 finish_reason = response.headers.get("finish-reason")
                 actual_seed = response.headers.get("seed")
                 
-                # Check for NSFW classification
                 if finish_reason == 'CONTENT_FILTERED':
                     print(f"  Image {img_idx+1} was filtered due to NSFW content")
                     continue
                 
-                # Save the image
                 image_path = os.path.join(concept_dir, f"{name}_{img_idx:03d}_{actual_seed}.{output_format}")
                 with open(image_path, "wb") as f:
                     f.write(output_image)
@@ -107,7 +97,6 @@ def generate_images(prompts, output_dir, model="core", aspect_ratio="1:1",
                 print(f"  Saved image {img_idx+1}/{num_images} to {image_path}")
                 image_count += 1
                 
-                # Add delay to avoid overloading the API
                 if img_idx < num_images - 1 and delay > 0:
                     time.sleep(delay)
                     
@@ -119,7 +108,6 @@ def generate_images(prompts, output_dir, model="core", aspect_ratio="1:1",
         else:
             failed += 1
             
-        # Add delay between concepts
         if i < total - 1 and delay > 0:
             time.sleep(delay)
     
@@ -150,10 +138,8 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # Load prompts
     prompts = load_prompts(args.prompt_file)
     
-    # Generate images
     generate_images(
         prompts,
         args.output_dir,

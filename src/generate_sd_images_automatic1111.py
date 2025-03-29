@@ -23,10 +23,8 @@ def generate_images(prompts, output_dir, api_url,
     """Generate images for each prompt using Stable Diffusion API."""
     txt2img_endpoint = f'{api_url}/sdapi/v1/txt2img'
     
-    # Create the output directory
     os.makedirs(output_dir, exist_ok=True)
     
-    # Track progress
     total = len(prompts)
     success = 0
     failed = 0
@@ -37,13 +35,11 @@ def generate_images(prompts, output_dir, api_url,
         prompt = item['prompt']
         name = item['name']
         
-        # Create directory for this concept
         concept_dir = os.path.join(output_dir, item['path'] if item['path'] else name)
         os.makedirs(concept_dir, exist_ok=True)
         
         print(f"[{i+1}/{total}] Generating {num_images} images for '{name}'...")
         
-        # Set up payload for API request
         payload = {
             "prompt": prompt,
             "steps": steps,
@@ -57,7 +53,6 @@ def generate_images(prompts, output_dir, api_url,
         }
         
         try:
-            # Make API request
             response = requests.post(url=txt2img_endpoint, json=payload)
             if response.status_code != 200:
                 print(f"  Error: API returned status code {response.status_code}")
@@ -66,23 +61,19 @@ def generate_images(prompts, output_dir, api_url,
                 
             r = response.json()
             
-            # Process and save images
             image_count = 0
             for img_data in r['images']:
                 try:
                     image = Image.open(io.BytesIO(base64.b64decode(img_data.split(",",1)[0])))
                     
-                    # Get image metadata
                     png_payload = {
                         "image": "data:image/png;base64," + img_data
                     }
                     response2 = requests.post(url=f'{api_url}/sdapi/v1/png-info', json=png_payload)
                     
-                    # Save image with metadata
                     pnginfo = PngImagePlugin.PngInfo()
                     pnginfo.add_text("parameters", response2.json().get("info"))
                     
-                    # Save the image
                     image_path = os.path.join(concept_dir, f"{name}_{image_count:03d}.png")
                     image.save(image_path, pnginfo=pnginfo)
                     image_count += 1
@@ -92,7 +83,6 @@ def generate_images(prompts, output_dir, api_url,
             print(f"  Saved {image_count} images to {concept_dir}")
             success += 1
             
-            # Add delay to avoid overloading the API
             if i < total - 1 and delay > 0:
                 time.sleep(delay)
                 
@@ -120,10 +110,8 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # Load prompts
     prompts = load_prompts(args.prompt_file)
     
-    # Generate images
     generate_images(
         prompts,
         args.output_dir,
